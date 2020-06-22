@@ -305,8 +305,78 @@ class RigidTransformation(_Transformation):
         flow = self._compute_dense_flow(transformation_matrix)
 
         return self._concatenate_flows(flow)
-    
-    
+
+
+class IsotropicSimilarityTransformation(RigidTransformation):
+    r"""
+    Similarity centred transformation for 2D and 3D.
+    Args:
+        moving_image (Image): moving image for the registration
+        opt_cm (bool): using center of as parameter for the optimisation
+    """
+    def __init__(self, moving_image, opt_cm=False):
+        super(IsotropicSimilarityTransformation, self).__init__(moving_image, opt_cm)
+
+        self._scale = Parameter(th.tensor(1.0))
+
+        self._scale_matrix = None
+
+        if self._dim == 2:
+            self._compute_transformation = self._compute_transformation_2d
+        else:
+            self._compute_transformation = self._compute_transformation_3d
+
+    def set_parameters(self, t, phi, scale, rotation_center=None):
+        """
+        Set parameters manually
+
+        t (array): 2 or 3 dimensional array specifying the spatial translation
+        phi (array): 1 or 3 dimensional array specifying the rotation angles
+        scale (scalar): scale factor
+        rotation_center (array): 2 or 3 dimensional array specifying the rotation center (default is zeros)
+        """
+        super(IsotropicSimilarityTransformation, self).set_parameters(t, phi, rotation_center)
+
+        self._scale = Parameter(th.tensor(scale).to(dtype=self._dtype, device=self._device))
+
+        if len(t) == 2:
+            self._compute_transformation_2d()
+        else:
+            self._compute_transformation_3d()
+
+    def _compute_transformation_2d(self):
+
+        super(IsotropicSimilarityTransformation, self)._compute_transformation_2d()
+
+        self._scale_matrix = th.diag(th.ones(self._dim + 1, dtype=self._dtype, device=self._device))
+
+        self._scale_matrix[0, 0] = self._scale
+        self._scale_matrix[1, 1] = self._scale
+
+    def _compute_transformation_3d(self):
+
+        super(IsotropicSimilarityTransformation, self)._compute_transformation_3d()
+
+        self._scale_matrix = th.diag(th.ones(self._dim + 1, dtype=self._dtype, device=self._device))
+
+        self._scale_matrix[0, 0] = self._scale
+        self._scale_matrix[1, 1] = self._scale
+        self._scale_matrix[2, 2] = self._scale
+
+    def _compute_transformation_matrix(self):
+        transformation_matrix = th.mm(th.mm(th.mm(th.mm(self._trans_matrix_pos, self._trans_matrix_cm),
+                                                  self._rotation_matrix), self._scale_matrix),
+                                      self._trans_matrix_cm_rw)[0:self._dim, :]
+
+        return transformation_matrix
+
+    def forward(self):
+
+        self._compute_transformation()
+        transformation_matrix = self._compute_transformation_matrix()
+        flow = self._compute_dense_flow(transformation_matrix)
+
+        return self._concatenate_flows(flow)
 
 
 class SimilarityTransformation(RigidTransformation):
