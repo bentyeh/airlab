@@ -26,13 +26,13 @@ Authors: Robin Sandkuehler and Christoph Jud
 Follow us on Twitter [<img width="2%" src="docs/twitter.png">](https://twitter.com/AirLab6?ref_src=twsrc%5Etfw) to get informed about the most recent features, achievements and bugfixes.
 
 ## Getting Started
-1. Clone git repository: `git clone https://github.com/airlab-unibas/airlab.git`
-2. Make sure that following python libraries are installed:
-  1. pytorch
-  2. numpy
-  3. SimpleITK
-  4. matplotlib
-They can be installed with `pip`.
+1. Make sure that following python libraries are installed (e.g., via `pip`):
+   1. pytorch
+   2. numpy
+   3. SimpleITK
+   4. matplotlib
+2. Clone git repository: `git clone https://github.com/airlab-unibas/airlab.git`
+3. Install AirLab: `pip install <path_to_airlab_repo>/airlab`
 
 We recommend to start with the example applications provided in the `example` folder.
 
