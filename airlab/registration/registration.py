@@ -31,6 +31,7 @@ class _Registration():
 
         self._verbose=verbose
         self.loss=inf
+        self.history = []
 
     def set_optimizer(self, optimizer):
         self._optimizer = optimizer
@@ -138,6 +139,7 @@ class PairwiseRegistration(_PairwiseRegistration):
             if self._verbose:
                 print(str(iter_index) + " ", end='', flush=True)
             loss = self._optimizer.step(self._closure)
+            self.history.append(loss)
             if EarlyStopping:
                 if loss < self.loss:
                     n = 0
